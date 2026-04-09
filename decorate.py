@@ -1,5 +1,6 @@
+from colorama import init, Fore
 
-
+init(autoreset=True)
 
 def line(name = ""):
-    print (10*"-" + name + 10*"-")
+    print (Fore.LIGHTBLUE_EX + 10*"-" + name + 10*"-")

@@ -1,4 +1,5 @@
 from decorate import line
+from pathlib import Path
 # 1) Створіть клас Book, який має такі властивості:
 
 # - назва книги
@@ -145,7 +146,14 @@ if __name__ == "__main__":
 # is_square(): повертає True, якщо це квадрат (ширина дорівнює висоті), інакше False.
 
 class Rectangle:
+    '''
+    The Rectangle class represents a rectangle with width and height.
+    Methods:
+    - area(): returns the area of the rectangle.
+    - perimeter(): returns the perimeter of the rectangle.
+    - is_square(): returns True if the rectangle is a square (width equals height), False otherwise.
 
+    '''
     def __init__ (self, width: float, height: float):
         self.width = width
         self.height = height
@@ -246,7 +254,12 @@ if __name__ == "__main__":
 # шукати книгу за назвою та повертати її інформацію
 
 class BookFromLibrary(Book):
-
+    '''The BookFromLibrary class represents a book in the library with an additional ISBN identifier.
+    The class inherits from the Book class, so it also has access to the title, author, and pages properties.
+    Methods:
+    - get_info(): returns information about the book including its ISBN, title, author, and
+      number of pages.
+    '''
     def __init__(self, title: str, author: str, pages: int, ISBN: int):
         super().__init__(title, author, pages)
         self.__ISBN = ISBN
@@ -311,9 +324,61 @@ if __name__ == "__main__":
 # додати страву в меню
 # вивести список доступних страв
 
-'''
-not finished
-'''
+class Dish:
+    def __init__(self, name: str, price: float, category: str):
+        self.name = name
+        self.price = price
+        self.category = category
+
+    def get_dish(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"Name: {self.name}, Price: {self.price}, Category: {self.category}"
+    
+class Order:
+    def __init__(self):
+        self.dishes = []
+
+    def add_dish(self, dish: Dish):
+        self.dishes.append(dish)
+
+    def remove_dish(self, dish_name: str):
+        self.dishes = [dish for dish in self.dishes if dish.name != dish_name]
+
+    def get_total_order_sum(self):
+        return sum(dish.price for dish in self.dishes)
+    
+class Restaurant:
+    def __init__(self):
+        self.menu = []
+
+    def add_dish_to_menu(self, dish: Dish):
+        self.menu.append(dish)
+
+    def display_menu(self):
+        for dish in self.menu:
+            print(dish.get_dish())
+
+if __name__ == "__main__":
+    line("Dish, Order and Restaurant classes, task 7")
+    restaurant = Restaurant()
+    dish1 = Dish("Spaghetti Carbonara", 12.99, "Main Course")
+    dish2 = Dish("Caesar Salad", 8.99, "Appetizer")
+    dish3 = Dish("Tiramisu", 6.99, "Dessert")
+
+    restaurant.add_dish_to_menu(dish1)
+    restaurant.add_dish_to_menu(dish2)
+    restaurant.add_dish_to_menu(dish3)
+
+    print("Menu:")
+    restaurant.display_menu()
+
+    order = Order()
+    order.add_dish(dish1)
+    order.add_dish(dish3)
+
+    print(f"Total order cost: ${order.get_total_order_sum():.2f}") # Total order cost: $19.98
 
 
 # 8) Облік студентів з файлами
@@ -332,6 +397,98 @@ not finished
 # зчитати студентів з файлу
 # знайти студента у файлі
 
-'''
-not finished
-'''
+class Student:
+    def __init__(self, name: str, age: int, grades: list):
+        self.name = name
+        self.age = age
+        self.grades = grades
+
+    def get_average_grade(self):
+        return sum(self.grades) / len(self.grades) if self.grades else 0.0
+    
+    def __str__(self):
+        return f"Name: {self.name}, Age: {self.age}, Grades: {self.grades}, Average Grade: {self.get_average_grade():.2f}"
+    
+
+class StudentDatabase:
+
+    def __init__(self, filename: str, subfolder: str = None, overwrite: bool = False):
+        self.filename = filename
+        base_dir = Path(__file__).parent
+        
+        if subfolder:
+            target_dir = base_dir / subfolder
+            target_dir.mkdir(parents=True, exist_ok=True)
+            self.filepath = target_dir / filename
+        else:
+            self.filepath = base_dir / filename
+
+        if overwrite and self.filepath.exists():
+            self.filepath.unlink()
+            print(f"Файл {self.filepath.name} был очищен.")
+
+    def add_student(self, student: Student):
+        with open(self.filepath, 'a', encoding='utf-8') as file:
+            file.write(f"{student.name},{student.age},{','.join(map(str, student.grades))}\n")
+
+    def read_students(self):
+        students = []
+        if not self.filepath.exists():
+            return students
+                
+        with open(self.filepath, 'r', encoding='utf-8') as file:
+            for line in file:
+                name, age, *grades = line.strip().split(',')
+                students.append(Student(name, int(age), list(map(float, grades))))
+        return students
+
+    def get_student(self, name: str):
+        students = self.read_students()
+        for student in students:
+            if student.name == name:
+                return student
+        return None
+
+
+def ifRes(res = None, errorText: str = "Student not found.", text: str = "Result:"):
+    if not res:
+        print(errorText)
+        return
+    print(f"{text} {res}")
+
+
+
+if __name__ == "__main__":
+    line("Student and StudentDatabase classes, task 8")
+
+    filename = "students.txt"
+    test_filepath = Path(__file__).parent / filename
+    need_overwrite = False
+    
+
+    if test_filepath.exists():
+        choice = input(f"File {filename} already exists. Do you want to rewrite it? (y/n): ").lower()
+        if choice == 'y':
+            need_overwrite = True
+        else:
+            print("Using existing file.")
+
+    database = StudentDatabase(filename, overwrite=need_overwrite, subfolder="data")
+    student1 = Student("Sata", 17, [11, 8, 9, 11, 12])
+    student2 = Student("Bob", 29, [12, 10, 3])
+
+    database.add_student(student1)
+    database.add_student(student2)
+
+    print("All students in the database:")
+    for student in database.read_students():
+        print(student)
+
+    name = "Sata"
+    res = database.get_student(name)
+    ifRes(res, errorText=f"Student {name} not found.", text=f"Found student {name}:")
+
+    name = "Alex"
+    res = database.get_student(name)
+    ifRes(res, errorText=f"Student {name} not found.", text=f"Found student {name}:")
+        
